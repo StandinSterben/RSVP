@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emil &amp; Rudy Anne — December 12, 2026</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        beigeBg: '#F9F6F0',
+                        beigeCard: '#EFECE6',
+                        beigeBorder: '#D8D0C5',
+                        brownBase: '#3A3531',
+                        brownLight: '#6B5B4F',
+                        goldAccent: '#A68A56',
+                        goldHover: '#8C7142'
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9F6F0;
+            color: #3A3531;
+        }
+        h1, h2, h3, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .custom-border {
+            border-color: #D8D0C5;
+        }
+        .custom-border-focus:focus {
+            border-color: #A68A56;
+            box-shadow: 0 0 15px rgba(166, 138, 86, 0.15);
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9F6F0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D8D0C5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-goldAccent selection:text-white">
+
+    <!--
+    ============================================================
+     STEP 1: Scroll down in this file to the CONFIG section
+             and replace WEB_APP_URL with the /exec URL you got
+             from deploying the Google Apps Script (Code.gs).
+    ============================================================
+    -->
+
+    <!-- Top Bar -->
+    <header class="bg-beigeCard border-b custom-border py-2 px-6 text-xs flex justify-between items-center gap-4">
+        <div class="flex items-center space-x-2 text-brownLight">
+            <i class="fa-solid fa-heart text-goldAccent"></i>
+            <span>Emil &amp; Rudy Anne Wedding Dashboard</span>
+        </div>
+        <button onclick="openExportModal()" class="px-3 py-1 bg-white border custom-border rounded-lg text-brownBase hover:border-goldAccent transition-all flex items-center space-x-1.5 shadow-sm">
+            <i class="fa-solid fa-file-excel text-goldAccent"></i>
+            <span>View Sheet Data</span>
+        </button>
+    </header>
+
+    <main class="flex-grow">
+        <!-- Welcome Hero Section -->
+        <section id="welcome" class="relative py-12 sm:py-20 px-6 flex flex-col items-center text-center overflow-hidden">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-goldAccent/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-3xl mx-auto space-y-5 relative z-10">
+                <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-beigeCard border custom-border text-brownLight text-xs tracking-widest uppercase shadow-sm">
+                    <i class="fa-regular fa-gem text-goldAccent"></i>
+                    <span>THE WEDDING CELEBRATION</span>
+                </div>
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-serif font-bold text-brownBase leading-tight">
+                    Emil <span class="text-goldAccent italic font-normal">&amp;</span> Rudy Anne
+                </h1>
+                <p class="text-brownLight text-base sm:text-lg font-light tracking-wide max-w-xl mx-auto">
+                    Together with our families, we invite you to celebrate our love and join us as we exchange vows.
+                </p>
+                <div class="pt-1 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-brownBase">
+                    <div class="flex items-center space-x-2 bg-beigeCard px-4 py-2.5 rounded-xl border custom-border shadow-sm">
+                        <i class="fa-solid fa-calendar-days text-goldAccent"></i>
+                        <span>Saturday, December 12, 2026</span>
+                    </div>
+                    <div class="flex flex-col items-start bg-beigeCard px-4 py-2 rounded-xl border custom-border shadow-sm">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-location-dot text-goldAccent"></i>
+                            <span class="font-medium">Ricky &amp; Weng's Garden Resort</span>
+                        </div>
+                        <span class="text-xs text-brownLight pl-6">Sta. Cruz Laguna</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RSVP Core Container -->
+        <section id="rsvp-section" class="py-6 px-6 max-w-4xl mx-auto mb-16">
+            <div class="bg-beigeCard border custom-border rounded-3xl p-6 sm:p-12 shadow-xl relative backdrop-blur-sm">
+
+                <!-- Step 1: Guest Lookup Form -->
+                <div id="step-lookup" class="space-y-6">
+                    <div class="text-center space-y-2">
+                        <h2 class="text-2xl sm:text-3xl font-serif text-brownBase font-bold">Guest Verification</h2>
+                        <p class="text-sm text-brownLight">Please enter your full name as written on your invitation envelope to look up your reservation.</p>
+                    </div>
+
+                    <div class="max-w-md mx-auto space-y-4">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-goldAccent">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" id="guest-name-input" placeholder="e.g. Abendanio, Sean Daniel or Dela Cruz, Anna Rose"
+                                class="w-full pl-11 pr-4 py-3.5 bg-white border custom-border rounded-xl text-brownBase placeholder-brownLight/40 text-sm focus:outline-none custom-border-focus transition-all shadow-inner"
+                                onkeypress="if(event.key === 'Enter') lookupGuest()">
+                        </div>
+                        <button onclick="lookupGuest()" class="w-full py-3.5 bg-goldAccent text-white rounded-xl font-semibold text-sm tracking-wider hover:bg-goldHover transition-all shadow-md flex items-center justify-center space-x-2">
+                            <span>Continue to RSVP</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <div class="text-center pt-2">
+                            <span class="text-xs text-brownLight">Tip: You can search by last name or full name.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Interactive RSVP Dashboard -->
+                <div id="step-form" class="hidden space-y-8">
+                    <div class="flex items-center justify-between border-b border-beigeBorder pb-4">
+                        <div>
+                            <span class="text-xs uppercase tracking-widest text-goldAccent font-semibold">Verified Guest Dashboard</span>
+                            <h3 id="display-guest-name" class="text-2xl font-serif font-bold text-brownBase">Guest Name</h3>
+                        </div>
+                        <button onclick="resetLookup()" class="text-xs text-brownLight hover:text-goldAccent underline">
+                            Not you? Switch guest
+                        </button>
+                    </div>
+
+                    <form id="rsvp-form" onsubmit="submitRSVP(event)" class="space-y-6">
+                        <!-- Main Guest Attendance -->
+                        <div class="space-y-3">
+                            <label class="block text-sm font-medium text-brownBase">Will you be attending our wedding?</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="attendance" value="Confirmed" required class="peer sr-only" onchange="toggleAttendanceNote()">
+                                    <div class="p-4 rounded-xl border custom-border bg-white text-center text-brownBase peer-checked:border-goldAccent peer-checked:bg-goldAccent/10 peer-checked:text-goldAccent transition-all shadow-sm">
+                                        <i class="fa-solid fa-champagne-glasses text-lg mb-1 block"></i>
+                                        <span class="font-medium text-sm">Joyfully Accepts</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="attendance" value="Declined" required class="peer sr-only" onchange="toggleAttendanceNote()">
+                                    <div class="p-4 rounded-xl border custom-border bg-white text-center text-brownBase peer-checked:border-red-400 peer-checked:bg-red-50 peer-checked:text-red-500 transition-all shadow-sm">
+                                        <i class="fa-solid fa-face-sad-tear text-lg mb-1 block"></i>
+                                        <span class="font-medium text-sm">Regretfully Declines</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Plus One Section -->
+                        <div id="plus-one-container" class="hidden space-y-4 p-5 bg-white rounded-2xl border custom-border shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-user-plus text-goldAccent"></i>
+                                    <span class="text-sm font-semibold text-brownBase">Plus One Allocation</span>
+                                </div>
+                                <span class="text-xs bg-goldAccent/20 text-goldAccent px-2.5 py-1 rounded-full font-medium">1 Reserved Seat</span>
+                            </div>
+
+                            <div class="space-y-3 pt-1">
+                                <div>
+                                    <label class="block text-xs uppercase tracking-wider text-brownLight mb-1">Plus One Full Name</label>
+                                    <input type="text" id="plus-one-name-input" placeholder="Enter guest plus one name"
+                                        class="w-full px-4 py-3 bg-[#F9F6F0] border custom-border rounded-xl text-brownBase placeholder-brownLight/40 text-sm focus:outline-none custom-border-focus">
+                                </div>
+
+                                <div class="pt-1">
+                                    <label class="block text-xs uppercase tracking-wider text-brownLight mb-2">Will your Plus One attend?</label>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="plus_one_attendance" value="Confirmed" class="peer sr-only">
+                                            <div class="p-3 rounded-xl border custom-border bg-[#F9F6F0] text-center text-brownBase peer-checked:border-goldAccent peer-checked:bg-goldAccent/10 peer-checked:text-goldAccent transition-all text-xs font-medium">
+                                                <i class="fa-solid fa-check mr-1"></i> Plus One Attending
+                                            </div>
+                                        </label>
+                                        <label class="cursor-pointer">
+                                            <input type="radio" name="plus_one_attendance" value="Declined" class="peer sr-only">
+                                            <div class="p-3 rounded-xl border custom-border bg-[#F9F6F0] text-center text-brownBase peer-checked:border-red-400 peer-checked:bg-red-50 peer-checked:text-red-500 transition-all text-xs font-medium">
+                                                <i class="fa-solid fa-xmark mr-1"></i> Plus One Cannot Attend
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Message to Couple -->
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-brownLight mb-1">Note to the Couple (Optional)</label>
+                            <textarea id="message-input" rows="3" placeholder="Leave a sweet wish or message for Emil &amp; Rudy Anne..."
+                                class="w-full px-4 py-3 bg-white border custom-border rounded-xl text-brownBase placeholder-brownLight/40 text-sm focus:outline-none custom-border-focus shadow-inner"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-4 bg-goldAccent text-white rounded-xl font-bold text-sm tracking-widest hover:bg-goldHover transition-all shadow-lg flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>SUBMIT &amp; SYNC RSVP</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Step 3: Success Screen -->
+                <div id="step-success" class="hidden text-center space-y-6 py-8">
+                    <div class="w-20 h-20 bg-goldAccent/20 rounded-full flex items-center justify-center mx-auto border border-goldAccent text-goldAccent text-3xl animate-bounce">
+                        <i class="fa-solid fa-heart"></i>
+                    </div>
+                    <div class="space-y-2">
+                        <h2 class="text-3xl font-serif text-brownBase font-bold">RSVP Recorded Successfully!</h2>
+                        <p id="success-description" class="text-brownLight text-sm max-w-md mx-auto">
+                            Thank you for confirming your response. Your data has been successfully saved.
+                        </p>
+                    </div>
+                    <div class="pt-4 flex flex-wrap justify-center gap-4">
+                        <button onclick="resetLookup()" class="px-6 py-3 bg-goldAccent text-white rounded-xl text-xs tracking-wider font-semibold hover:bg-goldHover transition-all shadow-md">
+                            Submit Another Response
+                        </button>
+                        <button onclick="openExportModal()" class="px-6 py-3 bg-white border custom-border rounded-xl text-brownBase text-xs tracking-wider font-semibold hover:border-goldAccent transition-all shadow-sm">
+                            Inspect Spreadsheet Database
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section id="gallery" class="py-12 px-6 max-w-6xl mx-auto">
+            <div class="text-center space-y-3 mb-10">
+                <span class="text-xs uppercase tracking-widest text-goldAccent font-semibold">MOMENTS CAPTURED</span>
+                <h2 class="text-3xl sm:text-4xl font-serif text-brownBase font-bold">Our Love Story &amp; Memories</h2>
+                <p class="text-brownLight text-sm max-w-lg mx-auto">A glimpse into our journey leading up to our special day.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div class="group relative rounded-2xl overflow-hidden border custom-border bg-beigeCard aspect-[4/5] shadow-md">
+                    <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800" alt="Engagement Shoot" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                </div>
+                <div class="group relative rounded-2xl overflow-hidden border custom-border bg-beigeCard aspect-[4/5] shadow-md">
+                    <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800" alt="Pre-wedding" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                </div>
+                <div class="group relative rounded-2xl overflow-hidden border custom-border bg-beigeCard aspect-[4/5] shadow-md">
+                    <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80&w=800" alt="The Proposal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: View Live Sheet Database -->
+    <div id="export-modal" class="fixed inset-0 bg-brownBase/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-beigeCard border custom-border rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-beigeBorder pb-4">
+                <div>
+                    <h3 class="font-serif text-xl font-bold text-brownBase">Sheet Database Records (guest tab)</h3>
+                    <p class="text-xs text-brownLight">Live from your Google Sheet: GuestName, PlaceHolder, PlusOneAllowed, RSVPStatus, PlusOneName, PlusOneStatus, NoteToCouple</p>
+                </div>
+                <button onclick="closeExportModal()" class="text-brownLight hover:text-brownBase text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="flex-grow overflow-auto border custom-border rounded-xl bg-white shadow-inner">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead class="bg-beigeCard text-brownBase sticky top-0 border-b custom-border">
+                        <tr>
+                            <th class="p-3">GuestName</th>
+                            <th class="p-3">PlaceHolder</th>
+                            <th class="p-3">PlusOneAllowed</th>
+                            <th class="p-3">RSVPStatus</th>
+                            <th class="p-3">PlusOneName</th>
+                            <th class="p-3">PlusOneStatus</th>
+                            <th class="p-3">NoteToCouple</th>
+                        </tr>
+                    </thead>
+                    <tbody id="database-table-body" class="divide-y divide-beigeBorder">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+                <span class="text-xs text-brownLight" id="total-guests-count">Total Guests: 0</span>
+                <div class="flex space-x-3">
+                    <button onclick="exportTableToCSV()" class="px-4 py-2 bg-white border custom-border rounded-xl text-brownBase text-xs font-semibold hover:border-goldAccent">
+                        <i class="fa-solid fa-download mr-1 text-goldAccent"></i> Download CSV
+                    </button>
+                    <button onclick="closeExportModal()" class="px-5 py-2 bg-goldAccent text-white rounded-xl text-xs font-semibold hover:bg-goldHover">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* ============================================================
+       CONFIG — paste your Apps Script Web App URL here.
+       It looks like:  https://script.google.com/macros/s/XXXXXX/exec
+       ============================================================ */
+    var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfxtz0ePGrBEnlq58G8jdvzDRjheB_oOpAEuS7RrTsozpJgrLfEiqU7hbTxu6P24sjDQ/exec";
+
+    // ---------------- State ----------------
+    var guestDatabase = [];        // loaded from the Google Sheet
+    var loadedFromSheet = false;
+    var currentActiveGuest = null;
+    var jsonpTimer = null;
+
+    window.onload = function () {
+        loadGuests();
+    };
+
+    /* ---------- Load guest list from Google Sheets (doGet via JSONP) ---------- */
+    function loadGuests() {
+        // Still the placeholder? The site can't work without a backend.
+        if (!WEB_APP_URL || WEB_APP_URL.indexOf("YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") !== -1) {
+            showAlert("This site is not connected to the guest sheet yet. Please contact the couple.");
+            return;
+        }
+
+        loadedFromSheet = false;
+        var script = document.createElement("script");
+        script.src = WEB_APP_URL + "?callback=handleSheetGuests";
+        script.onerror = function () {
+            showAlert("Could not reach the online guest list. Please check your connection and refresh.");
+        };
+        document.head.appendChild(script);
+
+        if (jsonpTimer) clearTimeout(jsonpTimer);
+        jsonpTimer = setTimeout(function () {
+            if (!loadedFromSheet) {
+                showAlert("The guest list is taking too long to load. Please refresh the page.");
+            }
+        }, 8000);
+    }
+
+    function handleSheetGuests(data) {
+        if (data && data.status === "error") {
+            showAlert("Google Sheet error: " + data.message);
+            return;
+        }
+        if (!Array.isArray(data) || data.length === 0) {
+            showAlert("The guest sheet returned no records. Check the 'guest' tab in your Google Sheet.");
+            return;
+        }
+        guestDatabase = data.map(normalizeGuest);
+        loadedFromSheet = true;
+    }
+
+    /* ---------- Normalization helpers ---------- */
+    function normKey(k) { return String(k || "").toLowerCase().replace(/\s+/g, ""); }
+
+    function normalizeSearch(str) {
+        return String(str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function pick(obj, keys) {
+        for (var i = 0; i < keys.length; i++) {
+            var wanted = normKey(keys[i]);
+            for (var k in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, k) && normKey(k) === wanted) return obj[k];
+            }
+        }
+        return "";
+    }
+
+    function normalizeGuest(g) {
+        return {
+            GuestName: String(pick(g, ["guestname", "name", "guest", "fullname"]) || ""),
+            PlaceHolder: String(pick(g, ["placeholder", "guestplaceholder", "plusholder"]) || ""),
+            PlusOneAllowed: String(pick(g, ["plusoneallowed", "plusone", "hasplusone"]) || ""),
+            RSVPStatus: String(pick(g, ["rsvpstatus", "status", "attendance", "mainattendance"]) || ""),
+            PlusOneName: String(pick(g, ["plusonename", "plusonenameofguest"]) || ""),
+            PlusOneStatus: String(pick(g, ["plusonestatus", "plusoneattendance", "plusoneattending"]) || ""),
+            NoteToCouple: String(pick(g, ["notetocouple", "note", "notes", "message", "wellwishes"]) || "")
+        };
+    }
+
+    /* ---------- Guest lookup ---------- */
+    function lookupGuest() {
+        if (guestDatabase.length === 0) {
+            showAlert("The guest list hasn't loaded yet. Please wait a moment and try again.");
+            return;
+        }
+
+        var query = document.getElementById("guest-name-input").value.trim().toLowerCase();
+        if (!query) {
+            showAlert("Please enter a guest name to search.");
+            return;
+        }
+
+        var terms = query.replace(/,/g, " ").split(/\s+/).filter(Boolean);
+        var matched = guestDatabase.find(function (g) {
+            var name = normalizeSearch(g.GuestName);
+            if (!name) return false;
+            return terms.every(function (t) { return name.indexOf(t) !== -1; });
+        });
+
+        if (!matched) {
+            showAlert("Name not found in our guest list. Please check the spelling (Surname, First Name) or contact the couple.");
+            return;
+        }
+
+        currentActiveGuest = matched;
+        document.getElementById("display-guest-name").innerText = matched.GuestName;
+
+        var plusOneContainer = document.getElementById("plus-one-container");
+        var plusOneNameInput = document.getElementById("plus-one-name-input");
+
+        if (canHavePlusOne(matched)) {
+            plusOneContainer.classList.remove("hidden");
+            plusOneNameInput.value = matched.PlusOneName || matched.PlaceHolder || "";
+        } else {
+            plusOneContainer.classList.add("hidden");
+            plusOneNameInput.value = "";
+        }
+
+        if (matched.RSVPStatus && matched.RSVPStatus !== "Pending") {
+            var radio = document.querySelector('input[name="attendance"][value="' + matched.RSVPStatus + '"]');
+            if (radio) radio.checked = true;
+        }
+
+        if (matched.PlusOneStatus && matched.PlusOneStatus !== "Pending") {
+            var pRadio = document.querySelector('input[name="plus_one_attendance"][value="' + matched.PlusOneStatus + '"]');
+            if (pRadio) pRadio.checked = true;
+        }
+
+        if (document.querySelector('input[name="attendance"]:checked')) toggleAttendanceNote();
+
+        document.getElementById("message-input").value = matched.NoteToCouple || "";
+
+        document.getElementById("step-lookup").classList.add("hidden");
+        document.getElementById("step-form").classList.remove("hidden");
+        window.scrollTo({ top: 180, behavior: "smooth" });
+    }
+
+    function canHavePlusOne(g) {
+        return g && (String(g.PlusOneAllowed).toLowerCase() === "allowed" || g.PlaceHolder || g.PlusOneName);
+    }
+
+    function toggleAttendanceNote() {
+        var attendanceEl = document.querySelector('input[name="attendance"]:checked');
+        var plusOneContainer = document.getElementById("plus-one-container");
+        if (!attendanceEl) return;
+        if (attendanceEl.value === "Declined") {
+            plusOneContainer.classList.add("hidden");
+        } else if (currentActiveGuest && canHavePlusOne(currentActiveGuest)) {
+            plusOneContainer.classList.remove("hidden");
+        }
+    }
+
+    function resetLookup() {
+        currentActiveGuest = null;
+        document.getElementById("guest-name-input").value = "";
+        document.getElementById("rsvp-form").reset();
+        document.getElementById("plus-one-container").classList.add("hidden");
+        document.getElementById("step-form").classList.add("hidden");
+        document.getElementById("step-success").classList.add("hidden");
+        document.getElementById("step-lookup").classList.remove("hidden");
+        window.scrollTo({ top: 120, behavior: "smooth" });
+    }
+
+    /* ---------- Submit RSVP ---------- */
+    function submitRSVP(event) {
+        event.preventDefault();
+
+        var attendanceEl = document.querySelector('input[name="attendance"]:checked');
+        if (!attendanceEl) {
+            showAlert("Please choose whether you can attend.");
+            return;
+        }
+
+        var attendance = attendanceEl.value;
+        var plusOneRadio = document.querySelector('input[name="plus_one_attendance"]:checked');
+        var canHave = canHavePlusOne(currentActiveGuest);
+        var plusOneAttending = plusOneRadio ? plusOneRadio.value : (canHave ? "Declined" : "Pending");
+        var plusOneNameVal = document.getElementById("plus-one-name-input").value.trim();
+        var note = document.getElementById("message-input").value.trim();
+
+        // Update the in-memory copy immediately (used by the viewer modal).
+        currentActiveGuest.RSVPStatus = attendance;
+        currentActiveGuest.PlusOneName = plusOneNameVal;
+        currentActiveGuest.PlusOneStatus = plusOneAttending;
+        currentActiveGuest.NoteToCouple = note;
+
+        // Send to Google Sheets. Field names match doPost in Code.gs.
+        var payload = {
+            guest_name: currentActiveGuest.GuestName,
+            attendance: attendance,
+            plus_one_name: plusOneNameVal,
+            plus_one_attendance: plusOneAttending,
+            message: note
+        };
+
+        pushToSheet(payload);
+
+        confetti({
+            particleCount: 130,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#A68A56', '#D8D0C5', '#3A3531']
+        });
+
+        var desc = "Thank you, " + currentActiveGuest.GuestName + "! Your RSVP status has been recorded as <strong>" + attendance + "</strong>.";
+        if (canHave && plusOneAttending === "Confirmed") {
+            desc += " We have also confirmed your plus-one (" + plusOneNameVal + ").";
+        }
+        document.getElementById("success-description").innerHTML = desc;
+
+        document.getElementById("step-form").classList.add("hidden");
+        document.getElementById("step-success").classList.remove("hidden");
+        window.scrollTo({ top: 180, behavior: "smooth" });
+
+        // Reload the list from the sheet so the site always shows fresh data.
+        setTimeout(loadGuests, 1500);
+    }
+
+    function pushToSheet(payload) {
+        if (!WEB_APP_URL || WEB_APP_URL.indexOf("YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") !== -1) {
+            console.warn("WEB_APP_URL not configured — update was not sent to the sheet.");
+            return;
+        }
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",                                  // Apps Script does not support CORS
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(payload)
+        }).catch(function (err) { console.error("Sync error:", err); });
+    }
+
+    /* ---------- Viewer modal ---------- */
+    function openExportModal() {
+        var tbody = document.getElementById("database-table-body");
+        tbody.innerHTML = "";
+
+        guestDatabase.forEach(function (g) {
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-beigeBg transition-all";
+            tr.innerHTML =
+                '<td class="p-3 font-semibold text-brownBase">' + escapeHtml(g.GuestName) + '</td>' +
+                '<td class="p-3 text-brownLight">' + escapeHtml(g.PlaceHolder || "-") + '</td>' +
+                '<td class="p-3 text-brownLight">' + escapeHtml(g.PlusOneAllowed || "-") + '</td>' +
+                '<td class="p-3">' + statusPill(g.RSVPStatus) + '</td>' +
+                '<td class="p-3 text-brownLight">' + escapeHtml(g.PlusOneName || "-") + '</td>' +
+                '<td class="p-3">' + statusPill(g.PlusOneStatus) + '</td>' +
+                '<td class="p-3 text-brownLight truncate max-w-xs">' + escapeHtml(g.NoteToCouple || "-") + '</td>';
+            tbody.appendChild(tr);
+        });
+
+        var confirmed = guestDatabase.filter(function (g) { return g.RSVPStatus === "Confirmed"; }).length;
+        document.getElementById("total-guests-count").innerText =
+            "Total Guest Records: " + guestDatabase.length + " | Confirmed: " + confirmed;
+        document.getElementById("export-modal").classList.remove("hidden");
+    }
+
+    function closeExportModal() {
+        document.getElementById("export-modal").classList.add("hidden");
+    }
+
+    function statusPill(value) {
+        var v = value || "Pending";
+        var cls = v === "Confirmed"
+            ? "bg-emerald-100 text-emerald-800"
+            : v === "Declined"
+                ? "bg-red-100 text-red-800"
+                : "bg-amber-100 text-amber-800";
+        return '<span class="px-2 py-0.5 rounded-full text-[10px] font-medium ' + cls + '">' + escapeHtml(v) + '</span>';
+    }
+
+    function exportTableToCSV() {
+        var csv = "GuestName,PlaceHolder,PlusOneAllowed,RSVPStatus,PlusOneName,PlusOneStatus,NoteToCouple\n";
+        guestDatabase.forEach(function (g) {
+            var rows = [g.GuestName, g.PlaceHolder, g.PlusOneAllowed, g.RSVPStatus, g.PlusOneName, g.PlusOneStatus, g.NoteToCouple];
+            csv += rows.map(function (v) { return '"' + String(v || "").replace(/"/g, '""') + '"'; }).join(",") + "\n";
+        });
+        var blob = new Blob([csv], { type: "text/csv" });
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.setAttribute("href", url);
+        a.setAttribute("download", "wedding_rsvp_sheet_export.csv");
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    /* ---------- UI helpers ---------- */
+    function escapeHtml(str) {
+        return String(str == null ? "" : str).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    function showAlert(message) {
+        var existing = document.getElementById("custom-alert");
+        if (existing) existing.remove();
+
+        var alertDiv = document.createElement("div");
+        alertDiv.id = "custom-alert";
+        alertDiv.className = "fixed bottom-6 right-6 bg-beigeCard border custom-border text-brownBase px-6 py-4 rounded-2xl shadow-xl z-50 flex items-center space-x-3";
+        alertDiv.innerHTML = '<i class="fa-solid fa-circle-exclamation text-goldAccent"></i>' +
+            '<span class="text-sm font-medium">' + escapeHtml(message) + '</span>';
+        document.body.appendChild(alertDiv);
+        setTimeout(function () { alertDiv.remove(); }, 4000);
+    }
+    </script>
+</body>
+</html>
