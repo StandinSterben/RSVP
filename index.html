@@ -65,6 +65,12 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-goldAccent selection:text-white">
 
+    <!-- Background Music: upload Palagi.mp3 into the "music" folder -->
+    <audio id="bg-music" loop preload="auto" src="music/Palagi.mp3"></audio>
+    <button id="music-toggle" onclick="toggleMusic()" class="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-goldAccent text-white shadow-lg flex items-center justify-center hover:bg-goldHover transition-all" aria-label="Toggle music">
+        <i id="music-icon" class="fa-solid fa-music"></i>
+    </button>
+
     <!--
     ============================================================
      STEP 1: Scroll down in this file to the CONFIG section
@@ -92,12 +98,12 @@
                 <div class="pt-1 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-brownBase">
                     <div class="flex items-center space-x-2 bg-beigeCard px-4 py-2.5 rounded-xl border custom-border shadow-sm">
                         <i class="fa-solid fa-calendar-days text-goldAccent"></i>
-                        <span>Saturday, December 12, 2026</span>
+                        <span>Saturday, December 12, 2026 (2:00 P.M.)</span>
                     </div>
                     <div class="flex flex-col items-center bg-beigeCard px-4 py-2 rounded-xl border custom-border shadow-sm">
                         <div class="flex items-center space-x-2">
                             <i class="fa-solid fa-church text-goldAccent"></i>
-                            <span class="font-medium">Immaculate Conception Parish Church</span>
+                            <span class="font-medium">Immaculate Conception Parish</span>
                         </div>
                         <span class="text-xs text-brownLight">Sta. Cruz Laguna</span>
                     </div>
@@ -161,7 +167,7 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="cursor-pointer">
                                     <input type="radio" name="attendance" value="Attending" required class="peer sr-only" onchange="toggleAttendanceNote()">
-                                    <div class="p-4 rounded-xl border custom-border bg-white text-center text-brownBase peer-checked:border-goldAccent peer-checked:bg-goldAccent/10 peer-checked:text-goldAccent transition-all shadow-sm">
+                                    <div class="p-4 rounded-xl border custom-border bg-white text-center text-brownBase peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 transition-all shadow-sm">
                                         <i class="fa-solid fa-champagne-glasses text-lg mb-1 block"></i>
                                         <span class="font-medium text-sm">Joyfully Accepts</span>
                                     </div>
@@ -198,7 +204,7 @@
                                     <div class="grid grid-cols-2 gap-4">
                                         <label class="cursor-pointer">
                                             <input type="radio" name="plus_one_attendance" value="Attending" class="peer sr-only">
-                                            <div class="p-3 rounded-xl border custom-border bg-[#F9F6F0] text-center text-brownBase peer-checked:border-goldAccent peer-checked:bg-goldAccent/10 peer-checked:text-goldAccent transition-all text-xs font-medium">
+                                            <div class="p-3 rounded-xl border custom-border bg-[#F9F6F0] text-center text-brownBase peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 transition-all text-xs font-medium">
                                                 <i class="fa-solid fa-check mr-1"></i> Plus One Attending
                                             </div>
                                         </label>
@@ -241,9 +247,6 @@
                     <div class="pt-4 flex flex-wrap justify-center gap-4">
                         <button onclick="resetLookup()" class="px-6 py-3 bg-goldAccent text-white rounded-xl text-xs tracking-wider font-semibold hover:bg-goldHover transition-all shadow-md">
                             Submit Another Response
-                        </button>
-                        <button onclick="openExportModal()" class="px-6 py-3 bg-white border custom-border rounded-xl text-brownBase text-xs tracking-wider font-semibold hover:border-goldAccent transition-all shadow-sm">
-                            Inspect Spreadsheet Database
                         </button>
                     </div>
                 </div>
@@ -330,6 +333,22 @@
     window.onload = function () {
         loadGuests();
     };
+
+    /* ---------- Music controller ---------- */
+    function toggleMusic() {
+        var audio = document.getElementById("bg-music");
+        var icon = document.getElementById("music-icon");
+        if (!audio) return;
+        if (audio.paused) {
+            audio.play().catch(function () { showAlert("Music could not be played automatically."); });
+            icon.classList.remove("fa-music");
+            icon.classList.add("fa-pause");
+        } else {
+            audio.pause();
+            icon.classList.remove("fa-pause");
+            icon.classList.add("fa-music");
+        }
+    }
 
     /* ---------- Load guest list from Google Sheets (doGet via JSONP) ---------- */
     function loadGuests() {
