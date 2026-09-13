@@ -166,14 +166,14 @@
                             <label class="block text-sm font-medium text-brownBase">Will you be attending our wedding?</label>
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="attendance" value="Attending" required class="peer sr-only" onchange="toggleAttendanceNote()">
+                                    <input type="radio" name="attendance" value="Attending" required class="peer sr-only" onchange="toggleAttendanceNote()" oninvalid="this.setCustomValidity('Please select an answer.')" oninput="this.setCustomValidity('')">
                                     <div class="p-4 rounded-xl border custom-border bg-white text-center text-brownBase peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:text-green-700 transition-all shadow-sm">
                                         <i class="fa-solid fa-champagne-glasses text-lg mb-1 block"></i>
                                         <span class="font-medium text-sm">Joyfully Accepts</span>
                                     </div>
                                 </label>
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="attendance" value="Declined" required class="peer sr-only" onchange="toggleAttendanceNote()">
+                                    <input type="radio" name="attendance" value="Declined" required class="peer sr-only" onchange="toggleAttendanceNote()" oninvalid="this.setCustomValidity('Please select an answer.')" oninput="this.setCustomValidity('')">
                                     <div class="p-4 rounded-xl border custom-border bg-white text-center text-brownBase peer-checked:border-red-400 peer-checked:bg-red-50 peer-checked:text-red-500 transition-all shadow-sm">
                                         <i class="fa-solid fa-face-sad-tear text-lg mb-1 block"></i>
                                         <span class="font-medium text-sm">Regretfully Declines</span>
@@ -195,8 +195,8 @@
                             <div class="space-y-3 pt-1">
                                 <div>
                                     <label class="block text-xs uppercase tracking-wider text-brownLight mb-1">Plus One Full Name</label>
-                                    <input type="text" id="plus-one-name-input" placeholder="Enter guest plus one name"
-                                        class="w-full px-4 py-3 bg-[#F9F6F0] border custom-border rounded-xl text-brownBase placeholder-brownLight/40 text-sm focus:outline-none custom-border-focus">
+                                    <input type="text" id="plus-one-name-input" readonly placeholder="Enter guest plus one name"
+                                        class="w-full px-4 py-3 bg-[#F9F6F0] border custom-border rounded-xl text-brownBase placeholder-brownLight/40 text-sm focus:outline-none cursor-not-allowed opacity-90">
                                 </div>
 
                                 <div class="pt-1">
@@ -543,6 +543,11 @@
         var canHave = canHavePlusOne(currentActiveGuest);
         var plusOneAttending = plusOneRadio ? plusOneRadio.value : (canHave ? "Declined" : "Pending");
         var plusOneNameVal = document.getElementById("plus-one-name-input").value.trim();
+
+        if (canHave && !plusOneRadio) {
+            showAlert("Please select whether your +1 will be attending or not.");
+            return;
+        }
         var note = document.getElementById("message-input").value.trim();
 
         // Update the in-memory copy immediately (used by the viewer modal).
