@@ -142,7 +142,7 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
                         <div class="text-center pt-2">
-                            <span class="text-xs text-brownLight">Tip: You can search by last name or full name.</span>
+                            <span class="text-xs text-brownLight">Tip: You can search by first name alone, or your full name (Surname, First Name).</span>
                         </div>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
                             <span class="text-xs uppercase tracking-widest text-goldAccent font-semibold">Verified Guest Dashboard</span>
                             <h3 id="display-guest-name" class="text-2xl font-serif font-bold text-brownBase">Guest Name</h3>
                         </div>
-                        <button onclick="resetLookup()" class="text-xs text-brownLight hover:text-goldAccent underline">
+                        <button onclick="resetLookup()" class="text-sm text-brownLight hover:text-goldAccent underline">
                             Not you? Switch guest
                         </button>
                     </div>
@@ -165,7 +165,7 @@
                             <label class="block text-sm font-medium text-brownBase">Will you be attending our wedding?</label>
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="attendance" value="Confirmed" required class="peer sr-only" onchange="toggleAttendanceNote()">
+                                    <input type="radio" name="attendance" value="Attending" required class="peer sr-only" onchange="toggleAttendanceNote()">
                                     <div class="p-4 rounded-xl border custom-border bg-white text-center text-brownBase peer-checked:border-goldAccent peer-checked:bg-goldAccent/10 peer-checked:text-goldAccent transition-all shadow-sm">
                                         <i class="fa-solid fa-champagne-glasses text-lg mb-1 block"></i>
                                         <span class="font-medium text-sm">Joyfully Accepts</span>
@@ -202,7 +202,7 @@
                                     <label class="block text-xs uppercase tracking-wider text-brownLight mb-2">Will your Plus One attend?</label>
                                     <div class="grid grid-cols-2 gap-4">
                                         <label class="cursor-pointer">
-                                            <input type="radio" name="plus_one_attendance" value="Confirmed" class="peer sr-only">
+                                            <input type="radio" name="plus_one_attendance" value="Attending" class="peer sr-only">
                                             <div class="p-3 rounded-xl border custom-border bg-[#F9F6F0] text-center text-brownBase peer-checked:border-goldAccent peer-checked:bg-goldAccent/10 peer-checked:text-goldAccent transition-all text-xs font-medium">
                                                 <i class="fa-solid fa-check mr-1"></i> Plus One Attending
                                             </div>
@@ -266,13 +266,13 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 <div class="group relative rounded-2xl overflow-hidden border custom-border bg-beigeCard aspect-[4/5] shadow-md">
-                    <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800" alt="Engagement Shoot" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <img src="images/pic1.jpg" alt="Engagement Shoot" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 </div>
                 <div class="group relative rounded-2xl overflow-hidden border custom-border bg-beigeCard aspect-[4/5] shadow-md">
-                    <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800" alt="Pre-wedding" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <img src="images/pic2.jpg" alt="Pre-wedding" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 </div>
                 <div class="group relative rounded-2xl overflow-hidden border custom-border bg-beigeCard aspect-[4/5] shadow-md">
-                    <img src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80&w=800" alt="The Proposal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <img src="images/pic3.jpg" alt="The Proposal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 </div>
             </div>
         </section>
@@ -413,6 +413,27 @@
     }
 
     /* ---------- Guest lookup ---------- */
+    function guestMatchesSearch(g, query) {
+        var name = String(g.GuestName || "");
+        var commaIdx = name.indexOf(",");
+        var firstName = commaIdx >= 0 ? name.slice(commaIdx + 1) : name;
+        var terms = query.replace(/,/g, " ").split(/\s+/).filter(Boolean);
+        if (!terms.length) return false;
+        var full = normalizeSearch(name);
+        var first = normalizeSearch(firstName);
+
+        // Single word with no comma → search first name only.
+        // A surname alone (e.g. "Tapang") will therefore not match,
+        // since many guests share the same surname.
+        if (terms.length === 1 && query.indexOf(",") === -1) {
+            return first.indexOf(terms[0]) !== -1;
+        }
+
+        // Multiple words (or comma present) → search the full name,
+        // so "Tapang Isaiah" works even without the comma.
+        return terms.every(function (t) { return full.indexOf(t) !== -1; });
+    }
+
     function lookupGuest() {
         if (guestDatabase.length === 0) {
             showAlert("The guest list hasn't loaded yet. Please wait a moment and try again.");
@@ -425,11 +446,8 @@
             return;
         }
 
-        var terms = query.replace(/,/g, " ").split(/\s+/).filter(Boolean);
         var matched = guestDatabase.find(function (g) {
-            var name = normalizeSearch(g.GuestName);
-            if (!name) return false;
-            return terms.every(function (t) { return name.indexOf(t) !== -1; });
+            return guestMatchesSearch(g, query);
         });
 
         if (!matched) {
@@ -451,13 +469,15 @@
             plusOneNameInput.value = "";
         }
 
-        if (matched.RSVPStatus && matched.RSVPStatus !== "Pending") {
-            var radio = document.querySelector('input[name="attendance"][value="' + matched.RSVPStatus + '"]');
+        var mainStatus = matched.RSVPStatus === "Confirmed" ? "Attending" : matched.RSVPStatus;
+        if (mainStatus && mainStatus !== "Pending") {
+            var radio = document.querySelector('input[name="attendance"][value="' + mainStatus + '"]');
             if (radio) radio.checked = true;
         }
 
-        if (matched.PlusOneStatus && matched.PlusOneStatus !== "Pending") {
-            var pRadio = document.querySelector('input[name="plus_one_attendance"][value="' + matched.PlusOneStatus + '"]');
+        var plusOneStatus = matched.PlusOneStatus === "Confirmed" ? "Attending" : matched.PlusOneStatus;
+        if (plusOneStatus && plusOneStatus !== "Pending") {
+            var pRadio = document.querySelector('input[name="plus_one_attendance"][value="' + plusOneStatus + '"]');
             if (pRadio) pRadio.checked = true;
         }
 
@@ -538,7 +558,7 @@
         });
 
         var desc = "Thank you, " + currentActiveGuest.GuestName + "! Your RSVP status has been recorded as <strong>" + attendance + "</strong>.";
-        if (canHave && plusOneAttending === "Confirmed") {
+        if (canHave && plusOneAttending === "Attending") {
             desc += " We have also confirmed your plus-one (" + plusOneNameVal + ").";
         }
         document.getElementById("success-description").innerHTML = desc;
@@ -583,7 +603,7 @@
             tbody.appendChild(tr);
         });
 
-        var confirmed = guestDatabase.filter(function (g) { return g.RSVPStatus === "Confirmed"; }).length;
+        var confirmed = guestDatabase.filter(function (g) { return g.RSVPStatus === "Attending" || g.RSVPStatus === "Confirmed"; }).length;
         document.getElementById("total-guests-count").innerText =
             "Total Guest Records: " + guestDatabase.length + " | Confirmed: " + confirmed;
         document.getElementById("export-modal").classList.remove("hidden");
@@ -595,7 +615,7 @@
 
     function statusPill(value) {
         var v = value || "Pending";
-        var cls = v === "Confirmed"
+        var cls = (v === "Attending" || v === "Confirmed")
             ? "bg-emerald-100 text-emerald-800"
             : v === "Declined"
                 ? "bg-red-100 text-red-800"
