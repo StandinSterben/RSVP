@@ -328,7 +328,9 @@
     var loadedFromSheet = false;
     var currentActiveGuest = null;
     var jsonpTimer = null;
-    var jsonpAttempts = 0;
+    var loadAttempt = 0;
+    var loadInFlight = false;
+    var MAX_LOAD_ATTEMPTS = 5;
 
     window.onload = function () {
         loadGuests();
@@ -350,39 +352,64 @@
         }
     }
 
-    /* ---------- Load guest list from Google Sheets (doGet via JSONP) ---------- */
+    /* ---------- Load guest list from Google Sheets (doGet via JSONP) ----------
+       Apps Script web apps can "cold start" (take 5-20s) or briefly fail, so
+       this retries with backoff on BOTH a network error and a timeout. Each
+       attempt uses a unique callback name so a late response from a previous
+       attempt cannot overwrite fresher data. */
     function loadGuests() {
+        if (loadInFlight) return;
+
         // Still the placeholder? The site can't work without a backend.
         if (!WEB_APP_URL || WEB_APP_URL.indexOf("YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") !== -1) {
             showAlert("This site is not connected to the guest sheet yet. Please contact the couple.");
             return;
         }
 
+        loadInFlight = true;
         loadedFromSheet = false;
+        var cbName = "handleSheetGuests_" + Date.now() + "_" + (loadAttempt++);
         var script = document.createElement("script");
-        script.src = WEB_APP_URL + "?callback=handleSheetGuests";
-        script.onerror = function () {
+        var settled = false;
+
+        function cleanup() {
             if (script.parentNode) script.parentNode.removeChild(script);
-            jsonpAttempts++;
-            if (jsonpAttempts >= 3) {
-                jsonpAttempts = 0;
-                showAlert("Could not reach the online guest list. Please check your connection and refresh.");
+            try { delete window[cbName]; } catch (err) { window[cbName] = undefined; }
+            if (jsonpTimer) { clearTimeout(jsonpTimer); jsonpTimer = null; }
+        }
+
+        function retry(reason) {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            loadInFlight = false;
+            if (loadAttempt < MAX_LOAD_ATTEMPTS) {
+                var backoff = Math.min(1500 * loadAttempt, 6000);
+                setTimeout(loadGuests, backoff);
             } else {
-                setTimeout(loadGuests, 2000);
+                loadAttempt = 0;
+                showAlert("Could not reach the online guest list. Please check your connection and refresh.");
             }
+        }
+
+        window[cbName] = function (data) {
+            if (settled) return;
+            settled = true;
+            cleanup();
+            loadInFlight = false;
+            loadAttempt = 0;
+            handleSheetGuests(data);
         };
+
+        script.onerror = function () { retry("network"); };
+        script.src = WEB_APP_URL + "?callback=" + cbName + "&_=" + Date.now();
         document.head.appendChild(script);
 
         if (jsonpTimer) clearTimeout(jsonpTimer);
-        jsonpTimer = setTimeout(function () {
-            if (!loadedFromSheet) {
-                showAlert("The guest list is taking too long to load. Please refresh the page.");
-            }
-        }, 12000);
+        jsonpTimer = setTimeout(function () { retry("timeout"); }, 15000);
     }
 
     function handleSheetGuests(data) {
-        jsonpAttempts = 0;
         if (data && data.status === "error") {
             showAlert("Google Sheet error: " + data.message);
             return;
@@ -448,7 +475,8 @@
 
     function lookupGuest() {
         if (guestDatabase.length === 0) {
-            showAlert("The guest list hasn't loaded yet. Please wait a moment and try again.");
+            showAlert("Still loading the guest list — please try again in a moment.");
+            loadGuests();   // nudge a fresh fetch in case the first one stalled
             return;
         }
 
@@ -562,7 +590,8 @@
             attendance: attendance,
             plus_one_name: plusOneNameVal,
             plus_one_attendance: plusOneAttending,
-            message: note
+            message: note,
+            device: describeDevice()
         };
 
         pushToSheet(payload);
@@ -588,7 +617,20 @@
         setTimeout(loadGuests, 1500);
     }
 
-    function pushToSheet(payload) {
+    function describeDevice() {
+        try {
+            var ua = navigator.userAgent || "";
+            var platform = navigator.platform || "";
+            var screenSize = (window.screen ? window.screen.width + "x" + window.screen.height : "");
+            var lang = navigator.language || "";
+            return [ua, platform, screenSize, lang].filter(Boolean).join(" | ");
+        } catch (e) {
+            return "unknown";
+        }
+    }
+
+    function pushToSheet(payload, attempt) {
+        attempt = attempt || 1;
         if (!WEB_APP_URL || WEB_APP_URL.indexOf("YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") !== -1) {
             console.warn("WEB_APP_URL not configured — update was not sent to the sheet.");
             return;
@@ -598,7 +640,15 @@
             mode: "no-cors",                                  // Apps Script does not support CORS
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload)
-        }).catch(function (err) { console.error("Sync error:", err); });
+        }).catch(function (err) {
+            // Network-level failure (offline, cold-start drop). Retry a couple times.
+            if (attempt < 3) {
+                setTimeout(function () { pushToSheet(payload, attempt + 1); }, 1500 * attempt);
+            } else {
+                console.error("Sync error after retries:", err);
+                showAlert("We couldn't save to the sheet just now. Please try submitting again.");
+            }
+        });
     }
 
     /* ---------- Viewer modal ---------- */
