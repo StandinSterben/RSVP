@@ -353,6 +353,10 @@
     var loadAttempt = 0;
     var loadInFlight = false;
     var MAX_LOAD_ATTEMPTS = 5;
+    var GUEST_CACHE_KEY = "weddingGuestListV1";
+    var pendingLookup = false;
+
+    loadGuestsFromCache();
 
     window.onload = function () {
         loadGuests();
@@ -410,7 +414,9 @@
                 setTimeout(loadGuests, backoff);
             } else {
                 loadAttempt = 0;
-                showAlert("Could not reach the online guest list. Please check your connection and refresh.");
+                if (guestDatabase.length === 0) {
+                    showAlert("Could not reach the online guest list. Please check your connection and refresh.");
+                }
             }
         }
 
@@ -442,6 +448,35 @@
         }
         guestDatabase = data.map(normalizeGuest);
         loadedFromSheet = true;
+        saveGuestsToCache(data);
+        resumePendingLookup();
+    }
+
+    /* ---------- Local cache so repeat visits and slow cold-starts never block ---------- */
+    function loadGuestsFromCache() {
+        try {
+            var raw = localStorage.getItem(GUEST_CACHE_KEY);
+            if (!raw) return;
+            var parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.data) && parsed.data.length) {
+                guestDatabase = parsed.data.map(normalizeGuest);
+                loadedFromSheet = true;
+                resumePendingLookup();
+            }
+        } catch (e) { /* cache unavailable or corrupt — ignore */ }
+    }
+
+    function saveGuestsToCache(data) {
+        try {
+            localStorage.setItem(GUEST_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data }));
+        } catch (e) { /* storage full/unavailable — ignore */ }
+    }
+
+    function resumePendingLookup() {
+        if (pendingLookup && guestDatabase.length) {
+            pendingLookup = false;
+            lookupGuest();
+        }
     }
 
     /* ---------- Normalization helpers ---------- */
@@ -497,8 +532,9 @@
 
     function lookupGuest() {
         if (guestDatabase.length === 0) {
-            showAlert("Still loading the guest list — please try again in a moment.");
-            loadGuests();   // nudge a fresh fetch in case the first one stalled
+            pendingLookup = true;
+            showAlert("Loading the guest list — your search will continue automatically in a moment.");
+            loadGuests();   // fetch now; the search resumes as soon as data arrives
             return;
         }
 
