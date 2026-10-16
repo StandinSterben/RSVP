@@ -23,6 +23,13 @@
     <meta name="twitter:title" content="Emil &amp; Rudy Anne — December 12, 2026" />
     <meta name="twitter:description" content="Together with our families, we invite you to celebrate our love and join us as we exchange vows." />
     <meta name="twitter:image" content="https://standinsterben.github.io/RSVP/images/og-cover-v2.jpg" />
+
+    <!-- Speed up the guest-list lookup from Google Apps Script -->
+    <link rel="preconnect" href="https://script.google.com" />
+    <link rel="dns-prefetch" href="https://script.google.com" />
+    <link rel="preconnect" href="https://script.googleusercontent.com" />
+    <link rel="dns-prefetch" href="https://script.googleusercontent.com" />
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -160,8 +167,8 @@
                                 class="w-full pl-11 pr-4 py-3.5 bg-white border custom-border rounded-xl text-brownBase placeholder-brownLight/40 text-sm focus:outline-none custom-border-focus transition-all shadow-inner"
                                 onkeypress="if(event.key === 'Enter') lookupGuest()">
                         </div>
-                        <button onclick="lookupGuest()" class="w-full py-3.5 bg-goldAccent text-white rounded-xl font-semibold text-sm tracking-wider hover:bg-goldHover transition-all shadow-md flex items-center justify-center space-x-2">
-                            <span>Continue to RSVP</span>
+                        <button id="lookup-btn" onclick="lookupGuest()" class="w-full py-3.5 bg-goldAccent text-white rounded-xl font-semibold text-sm tracking-wider hover:bg-goldHover transition-all shadow-md flex items-center justify-center space-x-2">
+                            <span id="lookup-btn-label">Continue to RSVP</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
                         <div class="text-center pt-2">
@@ -356,11 +363,9 @@
     var GUEST_CACHE_KEY = "weddingGuestListV1";
     var pendingLookup = false;
 
-    loadGuestsFromCache();
-
-    window.onload = function () {
-        loadGuests();
-    };
+    loadGuestsFromCache();      // instant if this device has a cached copy
+    setLookupReady(guestDatabase.length > 0);
+    loadGuests();               // start fetching immediately — don't wait for images/fonts
 
     /* ---------- Music controller ---------- */
     function toggleMusic() {
@@ -414,6 +419,7 @@
                 setTimeout(loadGuests, backoff);
             } else {
                 loadAttempt = 0;
+                setLookupReady(true);
                 if (guestDatabase.length === 0) {
                     showAlert("Could not reach the online guest list. Please check your connection and refresh.");
                 }
@@ -449,6 +455,7 @@
         guestDatabase = data.map(normalizeGuest);
         loadedFromSheet = true;
         saveGuestsToCache(data);
+        setLookupReady(true);
         resumePendingLookup();
     }
 
@@ -461,6 +468,7 @@
             if (parsed && Array.isArray(parsed.data) && parsed.data.length) {
                 guestDatabase = parsed.data.map(normalizeGuest);
                 loadedFromSheet = true;
+                setLookupReady(true);
                 resumePendingLookup();
             }
         } catch (e) { /* cache unavailable or corrupt — ignore */ }
@@ -476,6 +484,21 @@
         if (pendingLookup && guestDatabase.length) {
             pendingLookup = false;
             lookupGuest();
+        }
+    }
+
+    function setLookupReady(ready) {
+        var btn = document.getElementById("lookup-btn");
+        var label = document.getElementById("lookup-btn-label");
+        if (!btn || !label) return;
+        if (ready) {
+            btn.disabled = false;
+            btn.classList.remove("opacity-60", "cursor-wait");
+            label.innerText = "Continue to RSVP";
+        } else {
+            btn.disabled = true;
+            btn.classList.add("opacity-60", "cursor-wait");
+            label.innerText = "Loading guest list…";
         }
     }
 
